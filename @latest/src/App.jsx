@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './context/AuthContext';
 import LoginPage from './pages/auth/LoginPage';
 import LandingPage from './pages/auth/LandingPage';
-import RoleSelection from './pages/auth/RoleSelection';
+import RegisterPage from './pages/auth/RegisterPage';
 // TODO: Créer ces composants plus tard pour les dashboards
 const ClientDashboard = () => <div className="p-10">Bienvenue sur le Dashboard Client</div>;
 const PromoterDashboard = () => <div className="p-10">Bienvenue sur l'Espace Promoteur</div>;
@@ -16,10 +16,11 @@ function App() {
           {/* La page d'accueil par défaut */}
           <Route path="/" element={<LandingPage />} />
 
-          <Route path="/choix-connexion" element={<RoleSelection />} />
+         
           
           <Route path="/login/client" element={<LoginPage roleType="client" />} />
           <Route path="/login/promoteur" element={<LoginPage roleType="promoteur" />} />
+          <Route path="/register" element={<RegisterPage />} />
 
           <Route path="*" element={<Navigate to="/login/client" />} />
         </Routes>

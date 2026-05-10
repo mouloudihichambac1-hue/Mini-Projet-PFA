@@ -24,8 +24,8 @@ const LandingPage = () => {
           <button onClick={() => navigate('/choix-connexion')} 
             className="text-sm font-semibold text-gray-700 hover:text-blue-700">Se connecter
           </button>
-          <button onClick={() => navigate('/login/promoteur')} className="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded hover:bg-gray-800 transition">
-            + Publier un projet
+          <button onClick={() => navigate('/register')} className="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded hover:bg-gray-800 transition">
+            + S'inscrire
           </button>
         </div>
       </nav>
