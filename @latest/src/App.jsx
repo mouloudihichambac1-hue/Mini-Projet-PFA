@@ -3,13 +3,13 @@ import { AuthProvider } from './context/AuthContext';
 import LoginPage from './pages/auth/LoginPage';
 import LandingPage from './pages/auth/LandingPage';
 import RegisterPage from './pages/auth/RegisterPage';
-// TODO: Créer ces composants plus tard pour les dashboards
+
 const ClientDashboard = () => <div className="p-10">Bienvenue sur le Dashboard Client</div>;
 const PromoterDashboard = () => <div className="p-10">Bienvenue sur l'Espace Promoteur</div>;
 
 function App() {
   return (
-    /* 1. On enveloppe tout avec le AuthProvider pour que le "cerveau" soit actif partout */
+  
     <AuthProvider>
       <Router>
         <Routes>
@@ -18,11 +18,12 @@ function App() {
 
          
           
-          <Route path="/login/client" element={<LoginPage roleType="client" />} />
-          <Route path="/login/promoteur" element={<LoginPage roleType="promoteur" />} />
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+        
+          <Route path="/client-dashboard" element={<ClientDashboard />} />
+          <Route path="/promoteur-dashboard" element={<PromoterDashboard />} />
 
-          <Route path="*" element={<Navigate to="/login/client" />} />
         </Routes>
       </Router>
     </AuthProvider>

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState ,useEffect} from 'react';
+import { useNavigate ,useLocation} from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const LoginPage = () => {
@@ -9,7 +9,17 @@ const LoginPage = () => {
   const [role, setRole] = useState('client'); // État pour gérer le choix du rôle
   const { login } = useAuth();
   const navigate = useNavigate();
-  
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const roleFromUrl = params.get('role');
+    
+    if (roleFromUrl === 'promoteur' || roleFromUrl === 'client') {
+      setRole(roleFromUrl);
+    }
+    
+  }, [location]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,7 +30,7 @@ const LoginPage = () => {
       // 1. Définition dynamique de l'URL selon le rôle
       const host = window.location.hostname;
       const endpoint = role === 'promoteur' ? 'promoters' : 'clients';
-      const apiUrl = `http://${host}:4000/api/v1/${endpoint}/login`;
+      const apiUrl = `http://${host}:4000/api/v1/login/${endpoint}`;
 
       // 2. Envoi de la requête POST au serveur
       const response = await fetch(apiUrl, {
@@ -56,7 +66,7 @@ const LoginPage = () => {
       console.error("Erreur de connexion:", err);
     }
   };
-  /* Simulation pour le test
+  /* Simulation pour le test sans backend
 
     const mockUser = { name: "Utilisateur Test", role: role };
     login(mockUser, "fake-token");

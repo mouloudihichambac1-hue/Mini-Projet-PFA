@@ -21,7 +21,7 @@ const LandingPage = () => {
           </div>
         </div>
         <div className="flex items-center space-x-4">
-          <button onClick={() => navigate('/choix-connexion')} 
+          <button onClick={() => navigate('/login')} 
             className="text-sm font-semibold text-gray-700 hover:text-blue-700">Se connecter
           </button>
           <button onClick={() => navigate('/register')} className="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded hover:bg-gray-800 transition">
@@ -48,7 +48,7 @@ const LandingPage = () => {
         </div>
 
         {/* Barre de recherche flottante */}
-        <div className="absolute -bottom-8 w-11/12 max-w-4xl bg-white rounded-full shadow-xl flex items-center p-2 z-20 border border-gray-200">
+        <div className="absolute -bottom-8 w-11/12 max-w-4xl bg-white rounded-full shadow-xl flex items-center p-2 z-20 border border-gray-200 animate-bounce">
           <select className="px-4 py-3 bg-transparent text-gray-700 outline-none border-r border-gray-300 rounded-l-full cursor-pointer hidden md:block">
             <option>Acheter</option>
             <option>Louer</option>
@@ -102,7 +102,7 @@ const LandingPage = () => {
                   <span className="text-green-500 mr-3">✔</span> Communication directe et rapide avec le promoteur
                 </li>
               </ul>
-              <button onClick={() => navigate('/login/client')} className="w-full py-3 bg-blue-700 text-white rounded-md font-medium hover:bg-blue-800 transition">
+              <button onClick={() => navigate('/login?role=client')} className="w-full py-3 bg-blue-700 text-white rounded-md font-medium hover:bg-blue-800 transition">
                 En savoir plus sur l'espace client →
               </button>
             </div>
@@ -129,7 +129,7 @@ const LandingPage = () => {
                   <span className="text-green-500 mr-3">✔</span> Rapports détaillés sur l'avancement des chantiers
                 </li>
               </ul>
-              <button onClick={() => navigate('/login/promoteur')} className="w-full py-3 bg-blue-700 text-white rounded-md font-medium hover:bg-blue-800 transition">
+              <button onClick={() => navigate('/login?role=promoteur')} className="w-full py-3 bg-blue-700 text-white rounded-md font-medium hover:bg-blue-800 transition">
                 Découvrir les solutions promoteurs →
               </button>
             </div>
