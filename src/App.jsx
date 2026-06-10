@@ -6,7 +6,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Page dial l'choix dyal l'rôle (Landing sghira) */}
+        {/* Page du choix du rôle*/}
         <Route path="/" element={
           <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
             <h1 className="text-3xl font-bold text-gray-800 mb-8">Bienvenue sur ImmoBook v2</h1>
@@ -21,7 +21,7 @@ function App() {
           </div>
         } />
 
-        {/* Les Routes dyal les deux Dashboards */}
+        {/* Les Routes des deux Dashboards */}
         <Route path="/dashboard/client/*" element={<ClientDashboard />} />
         <Route path="/dashboard/promoteur/*" element={<PromoteurDashboard />} />
       </Routes>
