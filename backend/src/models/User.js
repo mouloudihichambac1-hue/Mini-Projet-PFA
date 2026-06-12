@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
-const userSchema = new mongoose.Schema( // on definit shema ( la forme obligatoire) de users
+const userSchema = new mongoose.Schema(
   {
     nom: {
       type: String,
-      required: true,// Si tu essaies de créer un utilisateur sans nom, Mongoose refuse et retourne une erreur.
-      trim: true, //supprime les espaces au début et à la fin automatiquement.
+      required: true,
+      trim: true,
     },
     email: {
       type: String,
@@ -32,6 +32,10 @@ const userSchema = new mongoose.Schema( // on definit shema ( la forme obligatoi
     codeVerificationExpire: {
       type: Date,
     },
+    resendVerificationCount: {
+      type: Number,
+      default: 0,
+    },
     typeCompte: {
       type: String,
       enum: ['particulier', 'entreprise', 'professionnel'],
@@ -45,14 +49,8 @@ const userSchema = new mongoose.Schema( // on definit shema ( la forme obligatoi
     },
   },
   {
-    timestamps: true, //ajoute automatiquement deux champs 
-    // à chaque document : createdAt (date de création) et updatedAt (date de dernière modification).
+    timestamps: true,
   }
 );
 
 module.exports = mongoose.model('User', userSchema);
-
-//on crée le modèle à partir du schéma et on l'exporte. 
-// Le premier argument 'User' est le nom de la collection 
-// dans MongoDB — Mongoose va automatiquement créer 
-// une collection appelée users (minuscule + pluriel).

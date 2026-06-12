@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; 
-
+import { API_BASE_URL } from '../../config/api';
 const ProjectSection = () => {
   const [projects, setProjects] = useState([]);
   const { user } = useAuth(); // On vérifie si l'utilisateur est connecté via le context
@@ -10,8 +10,8 @@ const ProjectSection = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const host = window.location.hostname;
-       // exemple: const response = await fetch(`http://${host}:4000/api/v1/projects`);
+        const apiUrl = `${API_BASE_URL}/projects`;
+        const response = await fetch(apiUrl);
         const data = await response.json();
         setProjects(data);
       } catch (error) {
@@ -69,7 +69,7 @@ const ProjectSection = () => {
                   <span className="grayscale">📍</span> {project.location}
                 </p>
 
-                {/* Barre de progression (Spécificité ImmoBook) */}
+                {/* Barre de progression */}
                 <div className="space-y-2 mb-8">
                   <div className="flex justify-between text-xs font-bold">
                     <span className="text-gray-400 uppercase tracking-wider">Construction</span>

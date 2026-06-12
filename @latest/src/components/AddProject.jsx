@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config/api';
 
 const AddProject = ({ onCancel, onSuccess }) => {
   const { token } = useAuth();
@@ -59,42 +60,44 @@ const AddProject = ({ onCancel, onSuccess }) => {
       return;
     }
     
-    // Bloquer la soumission si aucune photo n'est choisie
-    if (!formData.photos || formData.photos.length === 0) {
-      alert("⚠️ Action requise : Veuillez sélectionner au moins une photo pour pouvoir publier ce bien.");
-      return; 
-    }
-    
     setLoading(true);
     try {
-      const submitData = new FormData();
-      Object.keys(formData).forEach(key => {
-        if (key === 'amenities') submitData.append(key, JSON.stringify(formData[key]));
-        else if (key === 'photos') Array.from(formData.photos).forEach(f => submitData.append('photos', f));
-        else if (key === 'model3D' && formData.model3D) submitData.append('model3D', formData.model3D);
-        else submitData.append(key, formData[key]);
-      });
+      const projectBody = {
+        titre: formData.title,
+        description: formData.description,
+        type: formData.propertyType.toLowerCase(),
+        prix: parseFloat(formData.price) || 0,
+        ville: formData.city,
+        adresse: formData.address,
+        surface: parseInt(formData.area, 10) || 0,
+        nbChambres: parseInt(formData.rooms, 10) || 1,
+        nbSallesDeBain: parseInt(formData.bathrooms, 10) || 1,
+        equipements: formData.amenities,
+      };
 
-      const host = window.location.hostname;
-      const response = await fetch(`http://${host}:4000/api/v1/projects`, {
+      const response = await fetch(`${API_BASE_URL}/projects`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: submitData
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(projectBody)
       });
 
       if (response.ok) {
         alert('Propriété publiée avec succès !');
         onSuccess();
-      } else throw new Error('Erreur API');
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erreur API');
+      }
     } catch (error) {
-      console.error(error);
-      alert('Mode Démo : Le projet a été enregistré.');
-      onSuccess();
-    } finally {
-      setLoading(false);
-    }
-  };
-
+        console.error(error);
+        alert('Impossible de publier le projet sur le backend : ' + error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
   // Variable de vérification pour le bouton de publication
   const hasPhotos = formData.photos && formData.photos.length > 0;
 

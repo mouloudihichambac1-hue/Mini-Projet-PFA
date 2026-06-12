@@ -17,27 +17,11 @@ const CreateAppointment = () => {
   // UML : Processus de Réservation -> Changement de statut automatique du projet
   useEffect(() => {
     const lockProjectStatus = async () => {
-      try {
-        const host = window.location.hostname;
-        
-        // Route PATCH qui exécute l'étape 'updateProjectStatus(projectId, "réservé")' de diagramme de séquence
-        const response = await fetch(`http://${host}:4000/api/v1/reservations/${reservationId}/confirm-and-lock`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (response.ok) {
-          setIsStatusUpdated(true);
-          setLoading(false);
-        } else {
-          throw new Error("Erreur lors de la mise à jour du statut du bien immobilier.");
-        }
-      } catch (err) {
-        console.error(err);
-        // Fallback démo locale
+      // Backend non disponible pour cette fonctionnalité. Fallback local.
+      setTimeout(() => {
         setIsStatusUpdated(true);
         setLoading(false);
-      }
+      }, 500);
     };
 
     lockProjectStatus();
@@ -45,21 +29,8 @@ const CreateAppointment = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const host = window.location.hostname;
-      
-      // ex de requête POST pour enregistrer l'entité Appointment liée à la Conversation
-      const response = await fetch(`http://${host}:4000/api/v1/appointments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reservationId, dateTime, location, notes })
-      });
-
-      alert("Le rendez-vous a été enregistré. Le bouton de validation de cette réservation est maintenant verrouillé !");
-      navigate('/promoteur-dashboard');
-    } catch (err) {
-      setError("Erreur réseau lors de la planification du rendez-vous.");
-    }
+    alert("Rendez-vous enregistré en mode démo. Cette fonctionnalité n'est pas encore connectée au backend.");
+    navigate('/promoteur-dashboard');
   };
 
   if (loading) {

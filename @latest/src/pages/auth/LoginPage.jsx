@@ -1,6 +1,7 @@
 import React, { useState ,useEffect} from 'react';
 import { useNavigate ,useLocation} from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { API_BASE_URL } from '../../config/api';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -27,10 +28,8 @@ const LoginPage = () => {
     setError(''); 
 
     try {
-      // 1. Définition dynamique de l'URL selon le rôle
-      const host = window.location.hostname;
-      const endpoint = role === 'promoteur' ? 'promoters' : 'clients';
-      const apiUrl = `http://${host}:4000/api/v1/login/${endpoint}`;
+      
+      const apiUrl = `${API_BASE_URL}/auth/login`;
 
       // 2. Envoi de la requête POST au serveur
       const response = await fetch(apiUrl, {
@@ -38,7 +37,7 @@ const LoginPage = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, motDePasse: password ,role: role}),
       });
 
       const data = await response.json();
@@ -48,15 +47,23 @@ const LoginPage = () => {
         
         const userData = {
           id: data.user.id,
-          fullName: data.user.fullName,
+          fullName: data.user.nom,
           email: data.user.email,
-          role: role,
+          role: data.user.role,
         };
 
         // On enregistre dans le contexte global (localStorage + state)
-        login(userData, data.token);
+        login(userData, data.accessToken);
 
-        navigate(role === 'promoteur' ? '/promoteur-dashboard' : '/client-dashboard');
+        navigate(data.user.role === 'promoteur' ? '/promoteur-dashboard' : '/client-dashboard');
+      } else if (response.status === 403 && data.userId) {
+        navigate('/verify-email', {
+          state: {
+            userId: data.userId,
+            email: data.email || email,
+            remainingResend: typeof data.remainingResend === 'number' ? data.remainingResend : 3,
+          },
+        });
       } else {
         setError(data.message || "Identifiants ou mots de passe incorrects. Veuillez réessayer.");
       }
@@ -66,14 +73,7 @@ const LoginPage = () => {
       console.error("Erreur de connexion:", err);
     }
   };
-  /* Simulation pour le test sans backend
-
-    const mockUser = { name: "Utilisateur Test", role: role };
-    login(mockUser, "fake-token");
-    
-    navigate(role === 'promoteur' ? '/promoteur-dashboard' : '/client-dashboard');
-  };
-  */
+ 
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 font-sans p-4">

@@ -1,5 +1,5 @@
 const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const CloudinaryStorage = require('multer-storage-cloudinary');
 const multer = require('multer');
 require('dotenv').config();
 
@@ -9,12 +9,11 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: 'immobook/projects',
-    allowed_formats: ['jpg', 'png', 'webp'],
-  },
+
+const storage = CloudinaryStorage({
+  cloudinary: cloudinary,
+  folder: 'immobook/projects',
+  allowedFormats: ['jpg', 'png', 'webp'], 
 });
 
 const upload = multer({ storage, limits: { files: 10 } });

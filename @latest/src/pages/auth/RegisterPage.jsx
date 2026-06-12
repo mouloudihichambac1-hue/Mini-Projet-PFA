@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../../config/api';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -18,18 +19,16 @@ const RegisterPage = () => {
     setLoading(true);
 
     try {
-      const host = window.location.hostname;
-      // On choisit la route selon le rôle sélectionné
-      const endpoint = role === 'promoteur' ? 'promoters' : 'clients';
-      const apiUrl = `http://${host}:4000/api/v1/${endpoint}/register`;
+      const apiUrl = `${API_BASE_URL}/auth/register`;
 
       // Préparation des données à envoyer
       const bodyData = {
-        fullName,
+        nom: fullName,
         email,
-        password,
-        // On n'envoie companyName que si c'est un promoteur
-        ...(role === 'promoteur' && { companyName })
+        motDePasse: password,
+        role,
+        typeCompte: role === 'promoteur' ? 'entreprise' : 'particulier',
+        ...(role === 'promoteur' && { nomEntreprise: companyName }),
       };
 
       const response = await fetch(apiUrl, {
@@ -44,10 +43,8 @@ const RegisterPage = () => {
 
       if (response.ok) {
         // SUCCÈS
-        alert("Compte créé avec succès ! Connectez-vous.");
-        navigate('/login'); 
+        navigate('/verify-email', { state: { userId: data.userId, email } });
       } else {
-        // ERREUR SERVEUR (ex: email déjà utilisé)
         setError(data.message || "Une erreur est survenue lors de l'inscription.");
       }
     } catch (err) {
@@ -70,11 +67,7 @@ const RegisterPage = () => {
           <h2 className="text-2xl font-bold text-gray-800">Créer un compte</h2>
           <p className="text-gray-500 text-sm mt-2">Rejoignez la plateforme immobilière de référence</p>
         </div>
-        {error && (
-            <div className="mb-6 p-2 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm animate-bounce">
-                <span className="font-bold">Opps :</span> {error}
-            </div>
-        )}
+        
         <form onSubmit={handleSubmit} className="space-y-5">
           
           {/* Choix du rôle (Boutons Radio stylés) */}
@@ -149,7 +142,7 @@ const RegisterPage = () => {
 
         {/* Lien de retour */}
         <div className="mt-8 text-center text-sm text-gray-600">
-          <p>Vous avez déjà un compte ? <span onClick={() => navigate('/login/client')} className="text-blue-600 font-bold cursor-pointer hover:underline">Se connecter</span></p>
+          <p>Vous avez déjà un compte ? <span onClick={() => navigate('/login')} className="text-blue-600 font-bold cursor-pointer hover:underline">Se connecter</span></p>
           <button onClick={() => navigate('/')}
         className="mt-12 text-gray-500 hover:text-gray-800 text-sm font-medium transition">
         ← Retour à l'accueil

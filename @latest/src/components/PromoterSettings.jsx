@@ -1,19 +1,26 @@
-import React, { useState } from 'react';
-import { Building2, Globe, MapPin, ShieldCheck, Mail, Phone, Upload, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Building2, Globe, MapPin, Settings, Mail, Phone, Upload, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config/api';
 
 const PromoterSettings = () => {
-  const { user } = useAuth();
+  // On récupère l'utilisateur et le token depuis le contexte
+  const { user, token } = useAuth();
+  
   const [isSaved, setIsSaved] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  
+  // Fichier physique de l'image pour l'upload
+  const [logoFile, setLogoFile] = useState(null);
 
-  // Données locales de test pour simuler les attributs de l'entité Promoter
+  // 1. Initialisation dynamique des données depuis l'objet "user"
   const [profileData, setProfileData] = useState({
-    companyName: user?.companyName || 'Prestige Immo Maroc',
-    email: user?.email || 'contact@prestigeimmo.ma',
-    phone: '+212 5 22 45 78 90',
-    website: 'https://www.prestigeimmo.ma',
-    address: 'Anfa Place, Boulevard de la Corniche, Casablanca',
+    companyName: '',
+    email: '',
+    phone: '',
+    website: '',
+    address: '',
     logoUrl: null
   });
 
@@ -23,6 +30,21 @@ const PromoterSettings = () => {
     confirmPassword: ''
   });
 
+  // Remplissage du formulaire dès que les données de l'utilisateur sont disponibles
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        // Mapping Mongoose -> React
+        companyName: user.nomEntreprise || user.nom || '',
+        email: user.email || '',
+        phone: user.telephone || '', // À ajouter dans ton schéma User.js si absent
+        website: user.siteWeb || '', // À ajouter dans ton schéma User.js si absent
+        address: user.adresse || '', // À ajouter dans ton schéma User.js si absent
+        logoUrl: user.logoUrl || null
+      });
+    }
+  }, [user]);
+
   const handleProfileChange = (e) => {
     setProfileData({ ...profileData, [e.target.name]: e.target.value });
   };
@@ -31,31 +53,102 @@ const PromoterSettings = () => {
     setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
   };
 
+  // Prévisualisation et stockage du fichier image
   const handleLogoUpload = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setProfileData({ ...profileData, logoUrl: URL.createObjectURL(e.target.files[0]) });
+      const file = e.target.files[0];
+      setLogoFile(file);
+      setProfileData({ ...profileData, logoUrl: URL.createObjectURL(file) });
     }
   };
 
-  // Simulation de la sauvegarde locale (idéal pour la soutenance sans dépendre du réseau)
-  const handleSubmitProfile = (e) => {
+  // ─── REQUÊTE API : MISE À JOUR DU PROFIL ─────────────────────────────────
+  const handleSubmitProfile = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+
+    try {
+      // Utilisation de FormData pour supporter le texte + le fichier image
+      const formData = new FormData();
+      formData.append('nomEntreprise', profileData.companyName);
+      formData.append('email', profileData.email);
+      formData.append('telephone', profileData.phone);
+      formData.append('siteWeb', profileData.website);
+      formData.append('adresse', profileData.address);
+
+      // Si le promoteur a choisi un nouveau logo
+      if (logoFile) {
+        formData.append('logo', logoFile);
+      }
+
+      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`
+          // ⚠️ Important : Ne pas mettre 'Content-Type': 'application/json'
+          // Le navigateur gère automatiquement le boundary pour le FormData
+        },
+        body: formData
+      });
+
+      if (!response.ok) throw new Error('Erreur lors de la mise à jour du profil');
+
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 3000);
-    }, 800);
+      
+    } catch (error) {
+      console.error(error);
+      alert('Impossible de mettre à jour le profil.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ─── REQUÊTE API : CHANGEMENT DE MOT DE PASSE ───────────────────────────
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      return alert('Les nouveaux mots de passe ne correspondent pas.');
+    }
+
+    setPasswordLoading(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          motDePasseActuel: passwordData.currentPassword,
+          nouveauMotDePasse: passwordData.newPassword
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.message || 'Erreur lors du changement de mot de passe');
+
+      alert('Mot de passe mis à jour avec succès !');
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setPasswordLoading(false);
+    }
   };
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500 pb-12">
       
-      {/* Toast de succès de sauvegarde temporaire */}
+      {/* Toast de succès */}
       {isSaved && (
         <div className="fixed bottom-5 right-5 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-3 border border-slate-800 animate-in slide-in-from-bottom-5 z-50">
           <CheckCircle className="w-5 h-5 text-emerald-500" />
-          <span className="text-xs font-bold">Modifications enregistrées avec succès (Simulé) !</span>
+          <span className="text-xs font-bold">Modifications enregistrées avec succès !</span>
         </div>
       )}
 
@@ -64,7 +157,7 @@ const PromoterSettings = () => {
         <p className="text-slate-400 text-xs font-medium mt-1">Gérez la vitrine de votre entreprise et la sécurité de vos accès.</p>
       </div>
 
-      {/* FORMULAIRE 1 : INFORMATIONS DE L'ENTREPRISE  */}
+      {/* FORMULAIRE 1 : INFORMATIONS DE L'ENTREPRISE */}
       <form onSubmit={handleSubmitProfile} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
           <Building2 className="w-5 h-5 text-slate-700" />
@@ -72,13 +165,12 @@ const PromoterSettings = () => {
         </div>
 
         <div className="p-6 md:p-8 space-y-6">
-          {/* Zone d'upload du logo */}
           <div className="flex flex-col sm:flex-row items-center gap-6 pb-4 border-b border-slate-100">
             <div className="w-20 h-20 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center font-black text-slate-400 text-2xl overflow-hidden shadow-inner shrink-0 relative group">
               {profileData.logoUrl ? (
                 <img src={profileData.logoUrl} alt="Logo" className="w-full h-full object-cover" />
               ) : (
-                profileData.companyName.charAt(0)
+                profileData.companyName?.charAt(0) || 'P'
               )}
             </div>
             <div className="text-center sm:text-left space-y-2">
@@ -90,7 +182,6 @@ const PromoterSettings = () => {
             </div>
           </div>
 
-          {/* Grille des attributs de l'entité */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-2">Raison sociale / Nom de l'agence *</label>
@@ -142,9 +233,9 @@ const PromoterSettings = () => {
       </form>
 
       {/* FORMULAIRE 2 : SÉCURITÉ / MOT DE PASSE */}
-      <form onSubmit={(e) => { e.preventDefault(); alert("Modification du mot de passe simulée avec succès !"); }} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <form onSubmit={handlePasswordSubmit} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
-          <ShieldCheck className="w-5 h-5 text-slate-700" />
+          <Settings className="w-5 h-5 text-slate-700" />
           <h3 className="font-bold text-slate-800 text-sm">Sécurité & Authentification</h3>
         </div>
 
@@ -152,22 +243,22 @@ const PromoterSettings = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-2">Mot de passe actuel</label>
-              <input type="password" name="currentPassword" value={passwordData.currentPassword} onChange={handlePasswordChange} className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-slate-900 outline-none transition-all" />
+              <input type="password" name="currentPassword" required value={passwordData.currentPassword} onChange={handlePasswordChange} className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-slate-900 outline-none transition-all" />
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-2">Nouveau mot de passe</label>
-              <input type="password" name="newPassword" value={passwordData.newPassword} onChange={handlePasswordChange} className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-slate-900 outline-none transition-all" />
+              <input type="password" name="newPassword" required minLength="6" value={passwordData.newPassword} onChange={handlePasswordChange} className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-slate-900 outline-none transition-all" />
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-2">Confirmer le mot de passe</label>
-              <input type="password" name="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordChange} className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-slate-900 outline-none transition-all" />
+              <input type="password" name="confirmPassword" required minLength="6" value={passwordData.confirmPassword} onChange={handlePasswordChange} className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-slate-900 outline-none transition-all" />
             </div>
           </div>
         </div>
 
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end">
-          <button type="submit" className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 font-bold text-xs rounded-xl shadow-sm hover:bg-slate-50 transition">
-            Mettre à jour les accès
+          <button type="submit" disabled={passwordLoading} className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 font-bold text-xs rounded-xl shadow-sm hover:bg-slate-50 transition disabled:opacity-50">
+            {passwordLoading ? 'Mise à jour...' : 'Mettre à jour les accès'}
           </button>
         </div>
       </form>

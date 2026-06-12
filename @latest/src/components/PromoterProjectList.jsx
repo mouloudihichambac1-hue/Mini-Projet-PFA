@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Building2 } from 'lucide-react';
+import { API_BASE_URL } from '../config/api';
 
 const PromoterProjectList = (onAddProjectClick,searchQuery) => {
   const [projects, setProjects] = useState([]);
@@ -10,13 +11,19 @@ const PromoterProjectList = (onAddProjectClick,searchQuery) => {
   useEffect(() => {
     const fetchPromoterProjects = async () => {
       try {
-        const host = window.location.hostname;
-        const res = await fetch(`http://${host}:4000/api/v1/projects`);
+        const res = await fetch(`${API_BASE_URL}/projects`);
         
         if (!res.ok) throw new Error("Serveur injoignable");
         
         const data = await res.json();
-        setProjects(data);
+        setProjects((data.projets || data).map(project => ({
+          _id: project._id,
+          title: project.titre,
+          location: project.ville || project.adresse,
+          progress: project.progress ?? 0,
+          imageUrl: project.imageUrl || 'https://via.placeholder.com/150?text=ImmoBook',
+          statut: project.statut,
+        })));
         setLoading(false);
       } catch (error) {
         console.warn("Mode Démo activé (Projets chargés localement) :", error.message);
@@ -58,15 +65,12 @@ const PromoterProjectList = (onAddProjectClick,searchQuery) => {
   const handleProgressChange = async (projectId, newProgress) => {
     setUpdatingId(projectId);
     try {
-      const host = window.location.hostname;
-      
-      const response = await fetch(`http://${host}:3000/api/v1/projects/${projectId}/progress`, {
-        method: 'PATCH',
+      const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          // 'Authorization': `Bearer ${token}` 
         },
-        body: JSON.stringify({ progressPercent: parseInt(newProgress) }),
+        body: JSON.stringify({ progress: parseInt(newProgress) }),
       });
 
       if (response.ok) {

@@ -1,31 +1,31 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import heroImage from './../assets/hero-bg.jpg';
-import ProjectSection from '../components/ProjectSection';
+import heroImage from '../assets/hero-bg.jpg';
 const LandingPage = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
       {/* --- NAVBAR --- */}
-      <nav className="flex items-center justify-between px-4 md:px-8 py-4 bg-white shadow-sm sticky top-0 z-50">
+      <nav className="flex items-center justify-between px-4 md:px-8 py-4 bg-[#0f1f3d] shadow-lg sticky top-0 z-50">
         <div className="flex items-center space-x-8">
-          <div className="text-2xl font-bold text-blue-800 flex items-center gap-2 cursor-pointer">
-            <svg className="w-8 h-8 text-blue-700" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3zm0 2.5l5.5 5.5H16v7h-2v-6h-4v6H8v-7H6.5L12 5.5z"/></svg>
+          <div className="text-2xl font-bold text-white flex items-center gap-2 cursor-pointer">
+            <svg className="w-8 h-8 text-sky-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3zm0 2.5l5.5 5.5H16v7h-2v-6h-4v6H8v-7H6.5L12 5.5z"/></svg>
             <span>immobook</span>
           </div>
-          <div className="hidden md:flex space-x-6 text-sm font-medium text-gray-700">
-            <a href="#" className="hover:text-blue-700">Accueil</a>
-            <a href="#" className="hover:text-blue-700">Projets</a>
-            <a href="#" className="hover:text-blue-700">Nouveautés</a>
-            <a href="#" className="hover:text-blue-700">Contact</a>
+          <div className="hidden md:flex space-x-6 text-sm font-medium text-slate-200">
+            <a href="#" className="hover:text-white">Accueil</a>
+            <a href="#" className="hover:text-white">Projets</a>
+            <a href="#" className="hover:text-white">Nouveautés</a>
+            <a href="#" className="hover:text-white">Contact</a>
           </div>
         </div>
         <div className="flex items-center space-x-4">
           <button onClick={() => navigate('/login')} 
-            className="text-sm font-semibold text-gray-700 hover:text-blue-700">Se connecter
+            className="px-5 py-2.5 bg-white text-[#0f1f3d] text-sm font-semibold rounded shadow-sm hover:bg-slate-100 transition">
+            Se connecter
           </button>
-          <button onClick={() => navigate('/register')} className="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded hover:bg-gray-800 transition">
+          <button onClick={() => navigate('/register')} className="px-5 py-2.5 bg-sky-600 text-white text-sm font-medium rounded shadow-sm hover:bg-sky-500 transition">
             + S'inscrire
           </button>
         </div>
@@ -41,15 +41,12 @@ const LandingPage = () => {
         <div className="absolute inset-0 bg-black/50"></div>
         
         <div className="relative z-10 flex flex-col items-center text-center px-4">
-          <div className="mb-6 px-4 py-1.5 bg-white text-gray-900 text-sm font-semibold rounded-full flex items-center gap-2">
-            <span className="text-blue-600">★</span> Propulsé par l'innovation INPT
-          </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Trouvez votre projet immobilier idéal au Maroc</h1>
           <p className="text-lg md:text-xl text-gray-200 mb-12">Découvrez une sélection de projets et suivez l'avancement en temps réel</p>
         </div>
 
         {/* Barre de recherche flottante */}
-        <div className="absolute -bottom-8 w-11/12 max-w-4xl bg-white rounded-full shadow-xl flex items-center p-2 z-20 border border-gray-200 animate-bounce">
+        <div className="absolute -bottom-8 w-11/12 max-w-4xl bg-white rounded-full shadow-xl flex items-center p-2 z-20 border border-gray-200 ">
           <select className="px-4 py-3 bg-transparent text-gray-700 outline-none border-r border-gray-300 rounded-l-full cursor-pointer hidden md:block">
             <option>Acheter</option>
             <option>Louer</option>
@@ -70,12 +67,27 @@ const LandingPage = () => {
       </header>
 
       {/* --- BANNER --- */}
-      <div className="w-full bg-blue-800 py-3 mt-8">
-        <p className="text-center text-white text-sm font-medium tracking-wide">Une plateforme ImmoBook</p>
+      <div className="w-full bg-[#0f1f3d] py-3 mt-8">
+        <p className="text-center text-sm text-slate-200">Découvrez les projets immobiliers les plus récents et suivez leur avancement en temps réel.</p>
       </div>
 
-      <ProjectSection />
-      
+      <section className="px-4 py-14 max-w-6xl mx-auto">
+        <div className="grid gap-6 md:grid-cols-3">
+          <div className="rounded-3xl border border-[#0f1f3d]/10 bg-white p-7 shadow-sm">
+            <p className="text-3xl font-bold text-[#0f1f3d]">+120</p>
+            <p className="mt-3 text-sm text-slate-600">Projets immobiliers suivis avec transparence et efficacité.</p>
+          </div>
+          <div className="rounded-3xl border border-[#0f1f3d]/10 bg-white p-7 shadow-sm">
+            <p className="text-3xl font-bold text-[#0f1f3d]">98%</p>
+            <p className="mt-3 text-sm text-slate-600">Taux de satisfaction des utilisateurs grâce à une expérience claire et fluide.</p>
+          </div>
+          <div className="rounded-3xl border border-[#0f1f3d]/10 bg-white p-7 shadow-sm">
+            <p className="text-3xl font-bold text-[#0f1f3d]">24/7</p>
+            <p className="mt-3 text-sm text-slate-600">Support et suivi de projet disponibles à chaque étape de votre investissement.</p>
+          </div>
+        </div>
+      </section>
+
       {/* --- REJOIGNEZ LA PLATEFORME (Inspiré des cartes Agences/Développeurs) --- */}
       <section className="px-4 py-20 max-w-6xl mx-auto">
         <div className="text-center mb-12">
@@ -85,10 +97,10 @@ const LandingPage = () => {
 
         <div className="grid md:grid-cols-2 gap-8">
           {/* Carte Client */}
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition">
+          <div className="bg-white border border-[#0f1f3d]/10 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition">
             <div className="p-8">
               <div className="flex items-center gap-4 mb-6">
-                <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
+                <div className="p-3 bg-[#0f1f3d] text-white rounded-lg">
                   <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path></svg>
                 </div>
                 <h3 className="text-2xl font-bold">Pour les clients</h3>
@@ -112,10 +124,10 @@ const LandingPage = () => {
           </div>
 
           {/* Carte Promoteur */}
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition">
+          <div className="bg-white border border-[#0f1f3d]/10 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition">
             <div className="p-8">
               <div className="flex items-center gap-4 mb-6">
-                <div className="p-3 bg-green-50 text-green-600 rounded-lg">
+                <div className="p-3 bg-[#0f1f3d] text-white rounded-lg">
                   <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clipRule="evenodd"></path></svg>
                 </div>
                 <h3 className="text-2xl font-bold">Pour les promoteurs</h3>

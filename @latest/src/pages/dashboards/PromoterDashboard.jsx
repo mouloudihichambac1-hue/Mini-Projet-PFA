@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import PromoterProjectList from '../../components/PromoterProjectList';
@@ -220,7 +220,7 @@ const PromoterDashboard = () => {
             {activeTab === 'messages' && (
               <div className="space-y-4 max-w-3xl">
                 <h2 className="text-lg md:text-xl font-bold text-slate-900">Messagerie Client</h2>
-                <PromoterChat targetConversationId="conv_123" />
+                <PromoterChat />
               </div>
             )}
             

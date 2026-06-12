@@ -7,9 +7,11 @@ require('dotenv').config();
 
 const connectDB = require('./src/config/db');
 const errorHandler  = require('./src/middlewares/errorHandler');
-const authRoutes    = require('./src/routes/auth.routes');
-const projectsRoutes = require('./src/routes/projects.routes');
+const authRoutes         = require('./src/routes/auth.routes');
+const messageRoutes      = require('./src/routes/message.routes');
+const projectsRoutes     = require('./src/routes/projects.routes');
 const reservationsRoutes = require('./src/routes/reservations.routes');
+const favoritesRoutes    = require('./src/routes/favorites.routes');
 const reviewsRoutes      = require('./src/routes/reviews.routes');
 
 const app = express();
@@ -29,8 +31,10 @@ app.get('/', (req, res) => {
 
 
 app.use('/api/v2/auth', authRoutes);
+app.use('/api/v2/messages', messageRoutes);
 app.use('/api/v2/projects', projectsRoutes);
 app.use('/api/v2/reservations', reservationsRoutes);
+app.use('/api/v2/favorites', favoritesRoutes);
 app.use('/api/v2/reviews', reviewsRoutes);
 
 // Gestionnaire d'erreurs — toujours EN DERNIER

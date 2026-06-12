@@ -17,16 +17,15 @@ exports.register = async (req, res, next) => {
     const { nom, email, motDePasse, role, typeCompte, nomEntreprise, numeroRC } = req.body;
 
     // 1. Vérifie si l'email existe déjà
-    //Pourquoi vérifier d'abord ? Si tu créais l'utilisateur sans vérifier, 
-    // MongoDB retournerait une erreur brute (car email est unique dans le modèle)
+ 
     const existant = await User.findOne({ email });
     if (existant) {
       return res.status(400).json({ message: 'Cet email est déjà utilisé.' });
     }
 
 
-    // 2. Hash le mot de passe — jamais stocker en clair
-    const motDePasseHash = await bcrypt.hash(motDePasse, 12); //Le 12 est le cost factor (nombre de tours de l'algorithme) 
+    // 2. Hash le mot de passe 
+    const motDePasseHash = await bcrypt.hash(motDePasse, 12); 
 
     // 3. Génère un code de vérification valable 10 minutes
     const code = genererCode();
@@ -43,6 +42,7 @@ exports.register = async (req, res, next) => {
       numeroRC,
       codeVerification: code,
       codeVerificationExpire: expiration,
+      resendVerificationCount: 0,
     });
 
     // 5. Envoie le code par email
@@ -97,6 +97,50 @@ exports.verifyEmail = async (req, res, next) => {
   }
 };
 
+// ─── RESEND VERIFICATION CODE ────────────────────────
+exports.resendVerificationCode = async (req, res, next) => {
+  try {
+    const { userId } = req.body;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur introuvable.' });
+    }
+
+    if (user.emailVerifie) {
+      return res.status(400).json({ message: 'Votre email est déjà vérifié.' });
+    }
+
+    const attempts = user.resendVerificationCount || 0;
+    if (attempts >= 3) {
+      return res.status(400).json({
+        message: 'Vous avez atteint la limite de renvoi de code. Contactez le support.',
+        remaining: 0,
+      });
+    }
+
+    const code = genererCode();
+    const expiration = new Date(Date.now() + 10 * 60 * 1000);
+
+    user.codeVerification = code;
+    user.codeVerificationExpire = expiration;
+    user.resendVerificationCount = attempts + 1;
+    await user.save();
+
+    await sendEmail({
+      to: user.email,
+      subject: 'Nouveau code de vérification ImmoBook',
+      text: `Bonjour ${user.nom},\n\nVoici votre nouveau code de vérification : ${code}\n\nIl expire dans 10 minutes.`,
+    });
+
+    res.json({
+      message: 'Nouveau code envoyé. Vérifiez votre boîte mail.',
+      remaining: 3 - user.resendVerificationCount,
+    });
+  } catch (erreur) {
+    next(erreur);
+  }
+};
+
 // ─── LOGIN ────────────────────────────────────────────
 exports.login = async (req, res, next) => {
   try {
@@ -116,7 +160,12 @@ exports.login = async (req, res, next) => {
 
     // 3. Vérifie que l'email est confirmé
     if (!user.emailVerifie) {
-      return res.status(403).json({ message: 'Vérifiez votre email avant de vous connecter.' });
+      return res.status(403).json({
+        message: 'Vérifiez votre email avant de vous connecter.',
+        userId: user._id,
+        email: user.email,
+        remainingResend: 3 - (user.resendVerificationCount || 0),
+      });
     }
 
     // 4. Génère l'access token (15 minutes) , 

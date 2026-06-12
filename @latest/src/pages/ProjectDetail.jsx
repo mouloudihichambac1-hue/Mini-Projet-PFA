@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config/api';
 
 const ProjectDetail = () => {
   const { id } = useParams(); // Récupère l'ID du projet depuis l'URL
@@ -9,6 +10,7 @@ const ProjectDetail = () => {
   
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Redirection de sécurité (si un malin tape l'URL sans être connecté)
   useEffect(() => {
@@ -20,38 +22,67 @@ const ProjectDetail = () => {
   // Récupération des données du projet
   useEffect(() => {
     const fetchProjectDetails = async () => {
-      // Simulation d'appel API en attendant ton backend
-      setTimeout(() => {
-        setProject({
-          id: id,
-          title: "Villa de Luxe - Californie",
-          description: "Magnifique villa moderne avec jardin paysager et piscine à débordement. Finitions haut de gamme et domotique intégrée.",
-          price: 11800000,
-          city: "Casablanca",
-          address: "Quartier Californie",
-          propertyType: "Villa",
-          area: 436,
-          rooms: 5,
-          status: "Disponible",
-          progress: 85,
-          imageUrl: "https://via.placeholder.com/800x400?text=Vue+de+la+Villa"
-        });
+      try {
+        const response = await fetch(`${API_BASE_URL}/projects/${id}`);
+        if (!response.ok) {
+          throw new Error('Impossible de charger les détails du projet.');
+        }
+        const data = await response.json();
+        setProject(data);
+      } catch (err) {
+        setError(err.message || 'Erreur lors du chargement du projet.');
+      } finally {
         setLoading(false);
-      }, 500);
+      }
     };
+
     fetchProjectDetails();
   }, [id]);
 
   // Actions du diagramme d'activité
-  const handleReserve = () => {
-    // TODO: Appel API POST vers /api/v1/reservations
-    alert("Réservation confirmée ! Le promoteur va vous contacter pour un RDV.");
-    navigate('/ClientDashboard'); 
+  const handleReserve = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/reservations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ projetId: id, acompte: 0 }),
+      });
+
+      if (!response.ok) {
+        const body = await response.json();
+        throw new Error(body.message || 'Échec de la réservation.');
+      }
+
+      alert('Réservation envoyée ! Le promoteur prendra contact avec vous.');
+      navigate('/client-dashboard');
+    } catch (err) {
+      alert(err.message || 'Impossible de réserver ce projet.');
+    }
   };
 
-  const handleFavorite = () => {
-    // TODO: Appel API POST vers /api/v1/favorites
-    alert("Projet ajouté à vos favoris ❤️");
+  const handleFavorite = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/favorites`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ projetId: id }),
+      });
+
+      if (!response.ok) {
+        const body = await response.json();
+        throw new Error(body.message || 'Impossible d’ajouter ce projet aux favoris.');
+      }
+
+      alert('Projet ajouté à vos favoris ❤️');
+    } catch (err) {
+      alert(err.message || 'Impossible d’ajouter ce projet aux favoris.');
+    }
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Chargement des détails...</div>;
@@ -69,24 +100,28 @@ const ProjectDetail = () => {
         {/* En-tête et Image */}
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-8 border border-gray-200">
           <div className="h-96 bg-gray-200 relative">
-            <img src={project.imageUrl} alt={project.title} className="w-full h-full object-cover" />
+            <img
+              src={project.images?.[0]?.url || project.imageUrl || 'https://via.placeholder.com/800x400?text=Image+indisponible'}
+              alt={project.titre}
+              className="w-full h-full object-cover"
+            />
             <div className="absolute top-4 right-4 bg-white px-4 py-2 rounded-full font-bold text-blue-800 shadow-lg">
-              {project.status}
+              {project.statut || 'inconnu'}
             </div>
           </div>
           
           <div className="p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div>
               <div className="flex gap-2 mb-2">
-                <span className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-full">{project.propertyType}</span>
-                <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-full">Avancement: {project.progress}%</span>
+                <span className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-full">{project.type || 'Type inconnu'}</span>
+                <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-full">Avancement: {project.progress ?? 0}%</span>
               </div>
-              <h1 className="text-3xl font-bold text-gray-900">{project.title}</h1>
-              <p className="text-gray-500 mt-2">📍 {project.address}, {project.city}</p>
+              <h1 className="text-3xl font-bold text-gray-900">{project.titre}</h1>
+              <p className="text-gray-500 mt-2">📍 {project.adresse || 'Adresse inconnue'}, {project.ville}</p>
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-500 font-medium uppercase tracking-wider mb-1">Prix de vente</p>
-              <p className="text-4xl font-black text-blue-700">{project.price.toLocaleString()} DH</p>
+              <p className="text-4xl font-black text-blue-700">{(project.prix ?? 0).toLocaleString()} DH</p>
             </div>
           </div>
         </div>
@@ -104,11 +139,11 @@ const ProjectDetail = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
                   <p className="text-gray-500 text-sm mb-1">Surface</p>
-                  <p className="font-bold text-gray-900 text-lg">📐 {project.area} m²</p>
+                  <p className="font-bold text-gray-900 text-lg">📐 {project.surface ?? project.area ?? 0} m²</p>
                 </div>
                 <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
                   <p className="text-gray-500 text-sm mb-1">Pièces</p>
-                  <p className="font-bold text-gray-900 text-lg">🛏️ {project.rooms}</p>
+                  <p className="font-bold text-gray-900 text-lg">🛏️ {project.nbChambres ?? project.rooms ?? 0}</p>
                 </div>
               </div>
             </div>
